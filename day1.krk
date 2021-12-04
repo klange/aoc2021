@@ -1,0 +1,35 @@
+#!/usr/bin/env kuroko
+'''
+Template
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let depths = [int(x) for x in data]
+
+'''
+let last = depths[0]
+let incs = 0
+for x in depths[1:]:
+    if x > last:
+        incs++
+    last = x
+
+print(incs)
+'''
+
+'''
+let a,b,c = depths[0:3]
+let inc = 0
+for x in depths[3:]:
+    if x > a: inc++
+    a, b, c = b, c, x
+print(inc)
+'''
+
+
+print(sum(1 if depths[i] > depths[i-3] else 0 for i in range(3,len(depths))))

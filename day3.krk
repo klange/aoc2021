@@ -1,0 +1,49 @@
+#!/usr/bin/env kuroko
+'''
+Day 3
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let lines = [line.strip() for line in data]
+
+# Part 1
+let ones  = [0] * len(lines[0])
+let zeros = [0] * len(lines[0])
+
+for line in lines:
+    for i in range(len(line)):
+        if line[i] == '1': ones[i]++
+        else if line[i] == '0': zeros[i]++
+
+let gamma = int('0b' + ''.join('1' if ones[i] > zeros[i] else '0' for i in range(len(lines[0]))))
+let epsilon = int('0b' + ''.join('1' if ones[i] < zeros[i] else '0' for i in range(len(lines[0]))))
+let power = gamma * epsilon
+print(gamma,epsilon,power)
+
+# Part 2
+def most(i,lines,cmp):
+    let ones, zeros = 0, 0
+    for line in lines:
+        if line[i] == '1': ones++
+        else if line[i] == '0': zeros++
+    let out = []
+    let common = '1' if cmp(ones,zeros) else '0'
+    for line in lines:
+        if line[i] == common:
+            out.append(line)
+    return out
+
+def prune(cmp,next,i=0):
+    while len(next) > 1:
+        next = most(i,next,cmp)
+        i++
+    return next[0]
+
+let oxy = int('0b' + prune((lambda o,z:o>=z),lines))
+let co2 = int('0b' + prune((lambda o,z:o<z),lines))
+print(oxy,co2,oxy*co2)

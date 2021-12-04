@@ -1,0 +1,50 @@
+#!/usr/bin/env kuroko
+'''
+Template
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+# part 1
+
+'''
+let x = 0
+let y = 0
+
+for line in data:
+    let command, dist = line.split()
+    dist = int(dist)
+    if command == 'forward':
+        x += dist
+    else if command == 'down':
+        y += dist
+    else if command == 'up':
+        y -= dist
+
+print(x,y)
+print(x*y)
+'''
+
+let pos   = 0
+let depth = 0
+let aim   = 0
+
+for line in data:
+    let command, dist = line.split()
+    dist = int(dist)
+    if command == 'forward':
+        pos += dist
+        depth += dist * aim
+    else if command == 'down':
+        aim += dist
+    else if command == 'up':
+        aim -= dist
+
+
+print(pos,depth)
+print(pos*depth)
+

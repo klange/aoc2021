@@ -1,0 +1,158 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>day3.krk</title>
+		<style>
+			body {
+				margin: 0;
+				-webkit-text-size-adjust: none;
+				counter-reset: line-no;
+				background-color: #1f1f1f;
+			}
+			.ul { text-decoration: underline; }
+			.s0 { color: #e6e6e6;}
+			.s1 { color: #33a2e6;}
+			.s2 { color: #48b048;}
+			.s3 { color: #9e9981; font-style: oblique;}
+			.s4 { color: #e6ce6e;}
+			.s5 { color: #c24636;}
+			.s6 { color: #e62b7f;}
+			.s7 { color: #ffffff; background-color: #ff0000;}
+			.s8 { color: #37a700;}
+			.s9 { color: #de3535;}
+			.s10 { color: #1c1c1c; background-color: #ffff00;}
+			.s11 { color: #e6e6e6; font-weight: bold;}
+			.s12 { color: #33a2e6; font-decoration: underline;}
+			.s13 { color: #71cbad;}
+			.s14 { color: #e6e6e6;}
+			pre {
+				margin: 0;
+				white-space: pre-wrap;
+				font-family: "DejaVu Sans Mono", Courier, monospace;
+				font-size: 10pt;
+			}
+			pre>span {
+				display: inline-block;
+				width: 100%;
+			}
+			pre>span>a::before {
+				counter-increment: line-no;
+				content: counter(line-no);
+				padding-right: 1em;
+				width: 3em;
+				display: inline-block;
+				text-align: right;
+				background-color: #000000;
+				color: #968b39;
+			}
+			pre>span:target {
+				background-color: #2e2b2e;
+			}
+			pre>span:target>a::before {
+				background-color: #968b39;
+				color: #000000;
+			}
+			.tab1>span {
+				display: inline-block;
+				overflow: hidden;
+				width: 0;
+				height: 0;
+			}
+			.tab1::after {
+				content: '»';
+				background-color: #2e2b2e;
+				color: #7a7a7a;
+			}
+			.tab2>span {
+				display: inline-block;
+				overflow: hidden;
+				width: 0;
+				height: 0;
+			}
+			.tab2::after {
+				content: '»·';
+				background-color: #2e2b2e;
+				color: #7a7a7a;
+			}
+			.tab3>span {
+				display: inline-block;
+				overflow: hidden;
+				width: 0;
+				height: 0;
+			}
+			.tab3::after {
+				content: '»··';
+				background-color: #2e2b2e;
+				color: #7a7a7a;
+			}
+			.tab4>span {
+				display: inline-block;
+				overflow: hidden;
+				width: 0;
+				height: 0;
+			}
+			.tab4::after {
+				content: '»···';
+				background-color: #2e2b2e;
+				color: #7a7a7a;
+			}
+			.space {
+				border-left: 1px solid #7a7a7a;
+				margin-left: -1px;
+			}
+		</style>
+	</head>
+	<body><pre>
+<span id="L1"><a href="#L1"></a><span class="s3">#!/usr/bin/env kuroko</span></span>
+<span id="L2"><a href="#L2"></a><span class="s2">'''</span></span>
+<span id="L3"><a href="#L3"></a><span class="s2">Day 3</span></span>
+<span id="L4"><a href="#L4"></a><span class="s2">'''</span></span>
+<span id="L5"><a href="#L5"></a><span class="s1">import</span><span class="s0"> fileio</span></span>
+<span id="L6"><a href="#L6"></a><span class="s1">import</span><span class="s0"> kuroko</span></span>
+<span id="L7"><a href="#L7"></a><wbr></span>
+<span id="L8"><a href="#L8"></a><span class="s1">let</span><span class="s0"> data</span></span>
+<span id="L9"><a href="#L9"></a><span class="s1">with</span><span class="s0"> fileio.open(kuroko.argv[</span><span class="s6">1</span><span class="s0">] </span><span class="s1">if</span><span class="s0"> </span><span class="s4">len</span><span class="s0">(kuroko.argv) &gt; </span><span class="s6">1</span><span class="s0"> </span><span class="s1">else</span><span class="s0"> kuroko.argv[</span><span class="s6">0</span><span class="s0">].replace(</span><span class="s2">'.krk'</span><span class="s0">,</span><span class="s2">'.txt'</span><span class="s0">),</span><span class="s2">'r'</span><span class="s0">) </span><span class="s1">as</span><span class="s0"> f:</span></span>
+<span id="L10"><a href="#L10"></a><span class="s0">    data = f.readlines()</span></span>
+<span id="L11"><a href="#L11"></a><wbr></span>
+<span id="L12"><a href="#L12"></a><span class="s1">let</span><span class="s0"> lines = [line.strip() </span><span class="s1">for</span><span class="s0"> line </span><span class="s1">in</span><span class="s0"> data]</span></span>
+<span id="L13"><a href="#L13"></a><wbr></span>
+<span id="L14"><a href="#L14"></a><span class="s3"># Part 1</span></span>
+<span id="L15"><a href="#L15"></a><span class="s1">let</span><span class="s0"> ones  = [</span><span class="s6">0</span><span class="s0">] * </span><span class="s4">len</span><span class="s0">(lines[</span><span class="s6">0</span><span class="s0">])</span></span>
+<span id="L16"><a href="#L16"></a><span class="s1">let</span><span class="s0"> zeros = [</span><span class="s6">0</span><span class="s0">] * </span><span class="s4">len</span><span class="s0">(lines[</span><span class="s6">0</span><span class="s0">])</span></span>
+<span id="L17"><a href="#L17"></a><wbr></span>
+<span id="L18"><a href="#L18"></a><span class="s1">for</span><span class="s0"> line </span><span class="s1">in</span><span class="s0"> lines:</span></span>
+<span id="L19"><a href="#L19"></a><span class="s0">    </span><span class="s1">for</span><span class="s0"> i </span><span class="s1">in</span><span class="s0"> </span><span class="s4">range</span><span class="s0">(</span><span class="s4">len</span><span class="s0">(line)):</span></span>
+<span id="L20"><a href="#L20"></a><span class="s0">    <span class="space"> </span>   </span><span class="s1">if</span><span class="s0"> line[i] == </span><span class="s2">'1'</span><span class="s0">: ones[i]++</span></span>
+<span id="L21"><a href="#L21"></a><span class="s0">    <span class="space"> </span>   </span><span class="s1">else</span><span class="s0"> </span><span class="s1">if</span><span class="s0"> line[i] == </span><span class="s2">'0'</span><span class="s0">: zeros[i]++</span></span>
+<span id="L22"><a href="#L22"></a><wbr></span>
+<span id="L23"><a href="#L23"></a><span class="s1">let</span><span class="s0"> gamma = </span><span class="s4">int</span><span class="s0">(</span><span class="s2">'0b'</span><span class="s0"> + </span><span class="s2">''</span><span class="s0">.join(</span><span class="s2">'1'</span><span class="s0"> </span><span class="s1">if</span><span class="s0"> ones[i] &gt; zeros[i] </span><span class="s1">else</span><span class="s0"> </span><span class="s2">'0'</span><span class="s0"> </span><span class="s1">for</span><span class="s0"> i </span><span class="s1">in</span><span class="s0"> </span><span class="s4">range</span><span class="s0">(</span><span class="s4">len</span><span class="s0">(lines[</span><span class="s6">0</span><span class="s0">]))))</span></span>
+<span id="L24"><a href="#L24"></a><span class="s1">let</span><span class="s0"> epsilon = </span><span class="s4">int</span><span class="s0">(</span><span class="s2">'0b'</span><span class="s0"> + </span><span class="s2">''</span><span class="s0">.join(</span><span class="s2">'1'</span><span class="s0"> </span><span class="s1">if</span><span class="s0"> ones[i] &lt; zeros[i] </span><span class="s1">else</span><span class="s0"> </span><span class="s2">'0'</span><span class="s0"> </span><span class="s1">for</span><span class="s0"> i </span><span class="s1">in</span><span class="s0"> </span><span class="s4">range</span><span class="s0">(</span><span class="s4">len</span><span class="s0">(lines[</span><span class="s6">0</span><span class="s0">]))))</span></span>
+<span id="L25"><a href="#L25"></a><span class="s1">let</span><span class="s0"> power = gamma * epsilon</span></span>
+<span id="L26"><a href="#L26"></a><span class="s4">print</span><span class="s0">(gamma,epsilon,power)</span></span>
+<span id="L27"><a href="#L27"></a><wbr></span>
+<span id="L28"><a href="#L28"></a><span class="s3"># Part 2</span></span>
+<span id="L29"><a href="#L29"></a><span class="s1">def</span><span class="s0"> most(i,lines,cmp):</span></span>
+<span id="L30"><a href="#L30"></a><span class="s0">    </span><span class="s1">let</span><span class="s0"> ones, zeros = </span><span class="s6">0</span><span class="s0">, </span><span class="s6">0</span></span>
+<span id="L31"><a href="#L31"></a><span class="s0">    </span><span class="s1">for</span><span class="s0"> line </span><span class="s1">in</span><span class="s0"> lines:</span></span>
+<span id="L32"><a href="#L32"></a><span class="s0">    <span class="space"> </span>   </span><span class="s1">if</span><span class="s0"> line[i] == </span><span class="s2">'1'</span><span class="s0">: ones++</span></span>
+<span id="L33"><a href="#L33"></a><span class="s0">    <span class="space"> </span>   </span><span class="s1">else</span><span class="s0"> </span><span class="s1">if</span><span class="s0"> line[i] == </span><span class="s2">'0'</span><span class="s0">: zeros++</span></span>
+<span id="L34"><a href="#L34"></a><span class="s0">    </span><span class="s1">let</span><span class="s0"> out = []</span></span>
+<span id="L35"><a href="#L35"></a><span class="s0">    </span><span class="s1">let</span><span class="s0"> common = </span><span class="s2">'1'</span><span class="s0"> </span><span class="s1">if</span><span class="s0"> cmp(ones,zeros) </span><span class="s1">else</span><span class="s0"> </span><span class="s2">'0'</span></span>
+<span id="L36"><a href="#L36"></a><span class="s0">    </span><span class="s1">for</span><span class="s0"> line </span><span class="s1">in</span><span class="s0"> lines:</span></span>
+<span id="L37"><a href="#L37"></a><span class="s0">    <span class="space"> </span>   </span><span class="s1">if</span><span class="s0"> line[i] == common:</span></span>
+<span id="L38"><a href="#L38"></a><span class="s0">    <span class="space"> </span>   <span class="space"> </span>   out.append(line)</span></span>
+<span id="L39"><a href="#L39"></a><span class="s0">    </span><span class="s1">return</span><span class="s0"> out</span></span>
+<span id="L40"><a href="#L40"></a><wbr></span>
+<span id="L41"><a href="#L41"></a><span class="s1">def</span><span class="s0"> prune(cmp,next,i=</span><span class="s6">0</span><span class="s0">):</span></span>
+<span id="L42"><a href="#L42"></a><span class="s0">    </span><span class="s1">while</span><span class="s0"> </span><span class="s4">len</span><span class="s0">(next) &gt; </span><span class="s6">1</span><span class="s0">:</span></span>
+<span id="L43"><a href="#L43"></a><span class="s0">    <span class="space"> </span>   next = most(i,next,cmp)</span></span>
+<span id="L44"><a href="#L44"></a><span class="s0">    <span class="space"> </span>   i++</span></span>
+<span id="L45"><a href="#L45"></a><span class="s0">    </span><span class="s1">return</span><span class="s0"> next[</span><span class="s6">0</span><span class="s0">]</span></span>
+<span id="L46"><a href="#L46"></a><wbr></span>
+<span id="L47"><a href="#L47"></a><span class="s1">let</span><span class="s0"> oxy = </span><span class="s4">int</span><span class="s0">(</span><span class="s2">'0b'</span><span class="s0"> + prune((</span><span class="s1">lambda</span><span class="s0"> o,z:o&gt;=z),lines))</span></span>
+<span id="L48"><a href="#L48"></a><span class="s1">let</span><span class="s0"> co2 = </span><span class="s4">int</span><span class="s0">(</span><span class="s2">'0b'</span><span class="s0"> + prune((</span><span class="s1">lambda</span><span class="s0"> o,z:o&lt;z),lines))</span></span>
+<span id="L49"><a href="#L49"></a><span class="s4">print</span><span class="s0">(oxy,co2,oxy*co2)</span></span>
+</pre></body>
+</html>
+

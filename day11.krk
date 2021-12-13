@@ -1,0 +1,76 @@
+#!/usr/bin/env kuroko
+'''
+Template
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let lines = [line.strip() for line in data]
+let octos = [[int(x) for x in line] for line in lines]
+
+def neighbors(x,y):
+    let out = []
+    if x > 0:
+        if y > 0:
+            out.append((x-1,y-1))
+        out.append((x-1,y))
+        if y < len(octos[0]) - 1:
+            out.append((x-1,y+1))
+    if y > 0:
+        out.append((x,y-1))
+    if y < len(octos[0]) - 1:
+        out.append((x,y+1))
+    if x < len(octos) - 1:
+        if y > 0:
+            out.append((x+1,y-1))
+        out.append((x+1,y))
+        if y < len(octos[0]) - 1:
+            out.append((x+1,y+1))
+    return out
+
+def flash(flashed, x, y):
+    if flashed[x][y]:
+        return 0
+    let count = 1
+    flashed[x][y] = True
+    for _x, _y in neighbors(x,y):
+        octos[_x][_y] += 1
+        if not flashed[_x][_y] and octos[_x][_y] > 9:
+            count += flash(flashed,_x,_y)
+    return count
+
+def step_once(step):
+    let flashed = [[False] * len(lines[0]) for i in range(len(lines))]
+    for x in range(len(octos)):
+        for y in range(len(octos[x])):
+            octos[x][y] += 1
+    let count = 0
+    for x in range(len(octos)):
+        for y in range(len(octos[x])):
+            if octos[x][y] > 9:
+                count += flash(flashed,x,y)
+    for x in range(len(octos)):
+        for y in range(len(octos[x])):
+            if flashed[x][y]:
+                octos[x][y] = 0
+    #print(count,"flashed on step",step)
+    if count == 100:
+        print("everyone flashed on step", step)
+        return None
+    return count
+
+let total = 0
+let step = 1
+while True:
+    let c = step_once(step)
+    if c is None:
+        break
+    total += c
+    if step == 100:
+        print(total,"total on step", step)
+    step += 1
+

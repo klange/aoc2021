@@ -1,0 +1,94 @@
+#!/usr/bin/env kuroko
+'''
+Day 4
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let lines = [line.strip() for line in data]
+
+let cards = [int(x) for x in lines[0].split(',')]
+let boardsIn = lines[2:]
+let boards = []
+let board = []
+
+for line in boardsIn:
+    if not line:
+        boards.append(board)
+        board = []
+        continue
+    let row = []
+    for x in line.split(' '):
+        if x:
+            row.append([int(x),0])
+    board.append(row)
+
+def isWinner(board):
+    for row in board:
+        if all(x[1] for x in row): return True
+    for i in range(5):
+        if all(board[j][i][1] for j in range(5)): return True
+    return False
+
+def scoreBoard(board):
+    let f = 0
+    for row in board:
+        for column in row:
+            if not column[1]: f+= column[0]
+    return f
+
+def printBoard(board):
+    for row in board:
+        for column in row:
+            let n = column[0]
+            if n < 10: n = f' {n}' # Oops, formatters are incomplete
+            if column[1]:
+                print(f'\[[1m{n}\[[0m',end=' ')
+            else:
+                print(n,end=' ')
+        print('')
+
+# Part 1
+def part1():
+    for card in cards:
+        for board in boards:
+            for row in board:
+                for number in row:
+                    if number[0] == card:
+                        number[1] = 1
+            if isWinner(board):
+                printBoard(board)
+                print(scoreBoard(board))
+                print(card)
+                print(scoreBoard(board)*card)
+                return
+part1()
+
+# Part 2
+def part2():
+    let lastWinner = None
+    let lastCard = 0
+    let thisRound = boards
+    for card in cards:
+        if not boards:
+            break
+        let nextRound = []
+        for board in thisRound:
+            for row in board:
+                for number in row:
+                    if number[0] == card:
+                        number[1] = 1
+            if not isWinner(board):
+                nextRound.append(board)
+            else:
+                lastWinner = board
+                lastCard = card
+        thisRound = nextRound
+    printBoard(lastWinner)
+    print(scoreBoard(lastWinner)*lastCard)
+
+part2()

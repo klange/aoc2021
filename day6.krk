@@ -1,0 +1,29 @@
+#!/usr/bin/env kuroko
+'''
+Day 6
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let inputs = [int(x) for x in data[0].split(',')]
+
+# Bin fish by timer value
+#let fish = [0] * 9
+#for f in inputs:
+#    fish[f]++
+#
+#for days in range(256): # 80 for part 1
+#    let fresh = fish[0] # Collect fish at 0
+#    for i in range(8):  # Tick fish down
+#        fish[i] = fish[i+1]
+#    fish[6] += fresh # Cycle the fish that were at 0
+#    fish[8] = fresh  # And add the new fish
+
+let f = tuple(sum(int(x == i) for x in inputs) for i in range(9))
+for days in range(256): f = f[1], f[2], f[3], f[4], f[5], f[6], f[7] + f[0], f[8], f[0]
+print(sum(f),"fish")
+

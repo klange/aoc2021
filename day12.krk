@@ -1,0 +1,70 @@
+#!/usr/bin/env kuroko
+'''
+Template
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let lines = [line.strip() for line in data]
+
+let nodes = {}
+
+def do(a,b):
+    if not a in nodes:
+        nodes[a] = [b]
+    else:
+        nodes[a].append(b)
+
+for line in lines:
+    let left, right = line.split('-')
+    do(left,right)
+    do(right,left)
+
+def isbig(cave):
+    return cave[0] in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+def drill(path,current):
+    let out = []
+    for next in nodes[current]:
+        if next == 'end':
+            out.append(','.join(path))
+        else:
+            if isbig(next) or next not in path:
+                let new = [x for x in path]
+                new.append(next)
+                out.extend(drill(new,next))
+    return out
+
+print(len(drill(['start'],'start')))
+
+def cando(next,path):
+    if next == 'start':
+        return False
+    let counts = {}
+    let canTwice = True
+    for node in path:
+        counts[node] = counts.get(node,0) + 1
+        if counts[node] == 2 and not isbig(node):
+            canTwice = False
+    if next in path:
+        return canTwice
+    return True
+
+def drill2(path,current):
+    let out = []
+    for next in nodes[current]:
+        if next == 'end':
+            out.append(','.join(path))
+        else:
+            if isbig(next) or cando(next,path):
+                let new = [x for x in path]
+                new.append(next)
+                out.extend(drill2(new,next))
+    return out
+
+let answers = drill2(['start'],'start')
+print(len(answers))

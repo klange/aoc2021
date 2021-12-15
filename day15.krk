@@ -1,0 +1,86 @@
+#!/usr/bin/env kuroko
+'''
+Template
+'''
+import fileio
+import kuroko
+import math
+from collections import defaultdict
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let lines = [line.strip() for line in data]
+
+def runpart(scale):
+    let _height = len(lines)
+    let _width = len(lines[0])
+    let height = _height * scale
+    let width = _width * scale
+
+    let nodes = [[0 for x in range(width)] for y in range(height)]
+    for y in range(_height):
+        for x in range(_width):
+            for _y in range(scale):
+                for _x in range(scale):
+                    nodes[y + _height * _y][x + _width * _x] = (int(lines[y][x]) + _y + _x + 8) % 9 + 1
+
+    def neighbors(coord):
+        let y,x = coord
+        let ds = [(-1,0),(1,0),(0,-1),(0,1)]
+        for dy,dx in ds:
+            if (x + dx) < 0 or (x + dx) >= width or (y + dy) < 0 or (y + dy) >= height: continue
+            yield (y+dy,x+dx)
+
+    def findMin(Q,dist):
+        let found = None
+        for n in Q:
+            let y,x = n
+            if found is None or dist[y][x] < dist[found[0]][found[1]]:
+                found = n
+        return found
+
+    let target = (height - 1, width - 1)
+
+    def calculate(cameFrom, current):
+        let y,x = current
+        let total = nodes[y][x]
+        while cameFrom[y][x] is not None:
+            y,x = cameFrom[y][x]
+            total += nodes[y][x]
+        return total
+
+    def h(node):
+        return (height - node[0] + width - node[1]) - 2
+
+    def A_Star(start, target, h):
+        let open = {start}
+        let cameFrom = [[None for x in range(width)] for y in range(height)]
+        let gScore = [[math.inf for x in range(width)] for y in range(height)]
+        gScore[start[0]][start[1]] = 0
+        let fScore = [[math.inf for x in range(width)] for y in range(height)]
+        fScore[start[0]][start[1]] = h(start)
+
+        while open:
+            let current = findMin(open,fScore)
+            let y, x = current
+            if current == target:
+                return calculate(cameFrom, current)
+            open.remove(current)
+            for n in neighbors(current):
+                let _y, _x = n
+                let t_g = gScore[y][x] + nodes[y][x]
+                if t_g < gScore[_y][_x]:
+                    cameFrom[_y][_x] = current
+                    gScore[_y][_x] = t_g
+                    fScore[_y][_x] = t_g + h(n)
+                    if n not in open:
+                        open.add(n)
+        return None
+
+    let path = A_Star((0,0),target,h)
+    print(path - nodes[0][0])
+
+# runpart(1)
+runpart(5)

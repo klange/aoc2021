@@ -1,0 +1,52 @@
+#!/usr/bin/env kuroko
+'''
+Template
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let lines = [line.strip() for line in data]
+
+let pairmaps = {x: y for x,y in (i.split(' -> ') for i in lines[2:])}
+
+let memo = {}
+
+def add(dst,src):
+    for k,v in src.items():
+        dst[k] = dst.get(k,0) + v
+
+def expandPair(pr,depth):
+    # Check memoized results
+    if (depth,pr) in memo:
+        return memo[(depth,pr)]
+    # Bottom of our search depth or no expansion
+    if pr not in pairmaps or depth == 0:
+        memo[(depth,pr)] = {}
+        return {}
+    # We add only the new character
+    let out = {pairmaps[pr]: 1}
+    # And in the next step we'll consider the new pairs on the left and right
+    add(out,expandPair(pr[0] + pairmaps[pr],depth-1))
+    add(out,expandPair(pairmaps[pr]+pr[1],depth-1))
+    # Memoize the result
+    memo[(depth,pr)] = out
+    return out
+
+def dothething(src,depth):
+    let d = {}
+    # Count the starting characters
+    for c in src:
+        d[c] = d.get(c,0) + 1
+    # Recursively count the characters added by the insertion steps
+    for i = 0; i < len(src) - 1; i++:
+        add(d,expandPair(src[i:i+2],depth))
+    # Sort to get our lowest/highest
+    let cs = sorted([x for _,x in d.items()])
+    print(d,cs[-1],cs[0],cs[-1]-cs[0]) #''.join(lst))
+
+dothething(lines[0],10)
+dothething(lines[0],40)

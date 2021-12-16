@@ -1,0 +1,92 @@
+#!/usr/bin/env kuroko
+'''
+Template
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let line = [line.strip() for line in data][0]
+
+def toBin(x):
+    let s = bin(int('0x'+x))[2:]
+    return '0' * (4 - len(s)) + s
+
+let asBits = ''.join(toBin(c) for c in line)
+
+print(asBits)
+
+let index = 0
+
+def readBits(n):
+    let out = int('0b' + asBits[index:index+n])
+    index += n
+    return out
+
+def readBitsLit(n):
+    let out = asBits[index:index+n]
+    index += n
+    return out
+
+let total = 0
+
+def mul(s):
+    let out = s[0]
+    for p in s[1:]:
+        out *= p
+    return out
+
+let ops = {
+    0: sum,
+    1: mul,
+    2: min,
+    3: max,
+    5: lambda s: int(s[0] > s[1]),
+    6: lambda s: int(s[0] < s[1]),
+    7: lambda s: int(s[0] == s[1]),
+}
+
+let opnames = {
+    0: 'sum', 1: 'mul', 2: 'min', 3: 'max',
+    4: 'literal', 5: 'gt', 6: 'lt', 7: 'eq'
+}
+
+def readPacket(depth=0):
+    let version = readBits(3)
+    total += version
+    let packet = readBits(3)
+    print(' ' * depth, 'version',version,'type',packet,opnames[packet])
+
+    if packet == 4:
+        let bitstream = ''
+        while True:
+            let notLast = readBits(1)
+            let bits = readBitsLit(4)
+            bitstream = bitstream + bits
+            if not notLast:
+                break
+        print(' ' * depth, 'literal', bitstream,'=',int('0b'+bitstream))
+        return int('0b' + bitstream)
+    else:
+        let lenType = readBits(1)
+        let sub = []
+        if lenType == 0: # 15 bits
+            let length = readBits(15)
+            print(' ' * depth, ' len', length, 'bits')
+            let end = index + length
+            while index < end:
+                sub.append(readPacket(depth+2))
+        else:
+            let packets = readBits(11)
+            print(' ' * depth, ' len', packets, 'packets')
+            for i=0;i<packets;i++:
+                sub.append(readPacket(depth+2))
+        let answer = ops[packet](sub)
+        print(' '*depth,opnames[packet],'=',answer)
+        return answer
+
+print(readPacket())
+print('total of versions =',total)

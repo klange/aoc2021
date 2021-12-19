@@ -1,6 +1,6 @@
 #!/usr/bin/env kuroko
 '''
-Template
+day 19
 '''
 import fileio
 import kuroko
@@ -11,4 +11,120 @@ with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].repl
 
 let lines = [line.strip() for line in data]
 
-print(len(lines))
+# Input processing
+let current = None
+let scanners = {}
+for line in lines:
+    if not line:
+        continue
+    if line.startswith('---'):
+        current = int(line.split(' ')[2])
+        scanners[current] = []
+        continue
+    if current is None:
+        continue
+    scanners[current].append(tuple(int(x) for x in line.split(',')))
+
+# Coordinate spaces
+let x, y, z = 0,1,2
+let pos = 1
+let neg = -1
+
+let orientations = [
+    ((pos, x), (pos, y), (pos, z)),
+    ((pos, x), (neg, z), (pos, y)),
+    ((pos, x), (neg, y), (neg, z)),
+    ((pos, x), (pos, z), (neg, y)),
+
+    ((pos, z), (pos, x), (pos, y)),
+    ((pos, z), (neg, y), (pos, x)),
+    ((pos, z), (neg, x), (neg, y)),
+    ((pos, z), (pos, y), (neg, x)),
+
+    ((pos, y), (pos, z), (pos, x)),
+    ((pos, y), (neg, x), (pos, z)),
+    ((pos, y), (neg, z), (neg, x)),
+    ((pos, y), (pos, x), (neg, z)),
+
+    ((neg, x), (pos, z), (pos, y)),
+    ((neg, x), (neg, y), (pos, z)),
+    ((neg, x), (neg, z), (neg, y)),
+    ((neg, x), (pos, y), (neg, z)),
+
+    ((neg, z), (pos, y), (pos, x)),
+    ((neg, z), (neg, x), (pos, y)),
+    ((neg, z), (neg, y), (neg, x)),
+    ((neg, z), (pos, x), (neg, y)),
+
+    ((neg, y), (pos, x), (pos, z)),
+    ((neg, y), (neg, z), (pos, x)),
+    ((neg, y), (neg, x), (neg, z)),
+    ((neg, y), (pos, z), (neg, x)),
+]
+
+def transcribe_transformation(orient):
+    let labels = ['x','y','z']
+    let dirs   = ['-','','+']
+    return ','.join(dirs[x+1] + labels[y] for x,y in orient)
+
+# Matching
+from collections import defaultdict
+
+def dist(pt1,pt2,orient):
+    return (
+        pt2[0] - pt1[orient[0][1]] * orient[0][0],
+        pt2[1] - pt1[orient[1][1]] * orient[1][0],
+        pt2[2] - pt1[orient[2][1]] * orient[2][0]
+    )
+
+let beacons = {}
+
+# There is always a 0 scanner, so use it as the basis
+for pt in scanners[0]:
+    beacons[pt] = 1
+
+def add_beacon(mp,pt,orient,offset):
+    mp[(
+        pt[orient[0][1]] * orient[0][0] + offset[0],
+        pt[orient[1][1]] * orient[1][0] + offset[1],
+        pt[orient[2][1]] * orient[2][0] + offset[2]
+    )] = 1
+
+let scanner_positions = {0: (0,0,0)}
+
+let next = [x for x in scanners.keys()]
+for i in next:
+    let found = False
+    for orient in orientations:
+        let binnings = defaultdict(lambda: 0)
+        for pt1 in scanners[i]:
+            for pt2 in beacons.keys():
+                binnings[dist(pt1,pt2,orient)] += 1
+        for x,y in binnings.items():
+            if y >= 12:
+                found = True
+                print(i,"has",y,"overlaps when oriented",transcribe_transformation(orient),"at position",x)
+                scanner_positions[i] = x
+                for pt in scanners[i]:
+                    add_beacon(beacons,pt,orient,x)
+                break
+        if found: # Labeled breaks sure would be nice...
+            break
+    if not found:
+        next.append(i)
+
+print(len(beacons),"beacons after reconciliation")
+
+print("Positions of all scanners:",scanner_positions)
+
+# Distances
+def mdist(pt1,pt2):
+    return abs(pt1[0]-pt2[0])+abs(pt1[1]-pt2[1])+abs(pt1[2]-pt2[2])
+
+let top = 0
+for i in scanners.keys():
+    for j in scanners.keys():
+        let d = mdist(scanner_positions[i],scanner_positions[j])
+        if d > top:
+            top = d
+print(top,"maximum manhattan distance between scanners")

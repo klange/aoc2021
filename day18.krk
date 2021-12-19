@@ -1,0 +1,141 @@
+#!/usr/bin/env kuroko
+'''
+Template
+'''
+
+from numbers18 import inputs
+
+'''
+    [[[[4,3],4],4],[7,[[8,4],9]]],
+    [1,1]
+let inputs = [
+[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]
+,[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]
+,[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]
+,[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]
+,[7,[5,[[3,8],[1,4]]]]
+,[[2,[2,2]],[8,[8,1]]]
+,[2,9]
+,[1,[[[9,3],9],[[9,0],[0,7]]]]
+,[[[5,[7,4]],7],1]
+,[[[[4,2],2],6],[8,7]]
+]
+'''
+
+def place_leftmost(lst, val):
+    if isinstance(lst[0],int):
+        lst[0] += val
+    elif isinstance(lst[0],list):
+        place_leftmost(lst[0], val)
+
+def place_rightmost(lst, val):
+    if isinstance(lst[1],int):
+        lst[1] += val
+    elif isinstance(lst[1],list):
+        place_rightmost(lst[1], val)
+
+def explode(dest,depth=0):
+    if depth == 3:
+        if isinstance(dest[0],list): # Must explode dest[0]
+            let lval = dest[0][0]
+            let rval = dest[0][1]
+            if isinstance(dest[1],int):
+                dest[1] = dest[1] + rval
+            else:
+                place_leftmost(dest[1],rval)
+            dest[0] = 0
+            return (1, lval)
+        if isinstance(dest[1],list): # Must explode dest[1]
+            let lval = dest[1][0]
+            let rval = dest[1][1]
+            if isinstance(dest[0],int):
+                dest[0] = dest[0] + lval
+            else:
+                place_rightmost(dest[0],lval)
+            dest[1] = 0
+            return (2, rval)
+    else:
+        if isinstance(dest[0],list):
+            let t = explode(dest[0],depth+1)
+            if isinstance(t,tuple):
+                if t[0] == 1: # Explode left
+                    return t
+                if isinstance(dest[1],int):
+                    dest[1] += t[1]
+                else:
+                    place_leftmost(dest[1],t[1])
+                return True
+            elif t == True:
+                return True
+        if isinstance(dest[1],list):
+            let t = explode(dest[1],depth+1)
+            if isinstance(t,tuple):
+                if t[0] == 2:
+                    return t
+                if isinstance(dest[0],int):
+                    dest[0] += t[1]
+                else:
+                    place_rightmost(dest[0],t[1])
+                return True
+            elif t == True:
+                return True
+    return False
+
+def split(dest):
+    if isinstance(dest[0],list):
+        if split(dest[0]):
+            return True
+    if isinstance(dest[0],int) and dest[0] >= 10:
+        dest[0] = [dest[0]//2,dest[0]//2+dest[0]%2]
+        return True
+    if isinstance(dest[1],list):
+        if split(dest[1]):
+            return True
+    if isinstance(dest[1],int) and dest[1] >= 10:
+        dest[1] = [dest[1]//2,dest[1]//2+dest[1]%2]
+        return True
+    return False
+
+def add(dest, src):
+    let out = [dest,src]
+    let n = 1
+    while True:
+        n++
+        if explode(out):
+            continue
+        if split(out):
+            continue
+        return out
+
+def magnitude(x):
+    if isinstance(x,list):
+        return 3 * magnitude(x[0]) + 2 * magnitude(x[1])
+    else:
+        return x
+
+def deepcopy(x):
+    if isinstance(x,list):
+        return [deepcopy(_) for _ in x]
+    else:
+        return x
+
+let base = deepcopy(inputs[0])
+for i in range(1,len(inputs)):
+    base = add(base, deepcopy(inputs[i]))
+
+print(magnitude(base))
+
+let top = 0
+for i in range(len(inputs)):
+    for j in range(len(inputs)):
+        if j == i: continue
+        let a = deepcopy(inputs[i])
+        let b = deepcopy(inputs[j])
+        let c = add(a,b)
+        let m = magnitude(c)
+        if m > top:
+            top = m
+
+print(top)
+
+

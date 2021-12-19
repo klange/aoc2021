@@ -1,0 +1,75 @@
+#!/usr/bin/env kuroko
+'''
+Template
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let lines = [line.strip() for line in data]
+let line = lines[0]
+
+
+let x_target = [int(_) for _ in line.replace(',','').split(' ')[2].split('=')[1].split('..')]
+let y_target = [int(_) for _ in line.split(' ')[3].split('=')[1].split('..')]
+
+let pos_x = 0
+let pos_y = 0
+let vel_x = 0
+let vel_y = 0
+
+print(x_target,y_target)
+
+def do_steps():
+    let max_y = 0
+    let init_x = vel_x
+    while True:
+        pos_x += vel_x
+        pos_y += vel_y
+        vel_x += (-1 if vel_x > 0 else (1 if vel_x < 0 else 0))
+        vel_y -= 1
+        if pos_y > max_y:
+            max_y = pos_y
+        if pos_x > x_target[1]:
+            break
+        if vel_y <= 0 and pos_y < y_target[0]:
+            break
+        if vel_x <= 0 and pos_x < x_target[0]:
+            break
+        if pos_x < x_target[0]:
+            continue
+        if pos_x >= x_target[0] and pos_x <= x_target[1] and pos_y >= y_target[0] and pos_y <= y_target[1]:
+            return True
+            #return max_y
+    return False
+
+def try_vel(x,y):
+    pos_x = 0
+    pos_y = 0
+    vel_x = x
+    vel_y = y
+    return do_steps()
+
+'''
+let max_val = 0
+let max_vel = 0,0
+for x in range(1,1000):
+    for y in range(1, 1000):
+        let res = try_vel(x,y)
+        if res > max_val:
+            max_val = res
+            max_vel = x, y
+
+print(max_val, max_vel)
+'''
+
+let count = 0
+for x in range(1,1000):
+    for y in range(-1000, 1000):
+        if try_vel(x,y):
+            count += 1
+print(count)
+

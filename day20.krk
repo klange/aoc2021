@@ -4,58 +4,60 @@ Day 20
 '''
 import fileio
 import kuroko
+import gc
+import os
 
-let data
-with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
-    data = f.readlines()
+gc.pause()
 
-let lines = [line.strip() for line in data]
+if True:
+    let data
+    with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+        data = f.readlines()
 
-let algo = [1 if x == '#' else 0 for x in lines[0]]
-let rest = lines[2:]
+    let lines = [line.strip() for line in data]
 
-let height = len(rest)
-let width = len(rest[0])
+    let algo = [1 if x == '#' else 0 for x in lines[0]]
+    let rest = lines[2:]
 
-def maybe(img,y,x,inf):
-    return (img.get((y,x),inf) << 2) | (img.get((y,x+1),inf) << 1) | (img.get((y,x+2),inf))
+    let height = len(rest)
+    let width = len(rest[0])
 
-def pt_to_nums(img,y,x,inf):
-    return (maybe(img,y-1,x-1,inf) << 6) | (maybe(img,y,x-1,inf) << 3) | maybe(img,y+1,x-1,inf)
+    def maybe(img,y,x,inf):
+        return (img.get((y,x),inf) << 2) | (img.get((y,x+1),inf) << 1) | (img.get((y,x+2),inf))
 
-def pt_to_manip(img,y,x,inf):
-    let ind = pt_to_nums(img,y,x,inf)
-    return algo[ind]
+    def pt_to_manip(img,y,x,inf):
+        let ind = (maybe(img,y-1,x-1,inf) << 6) | (maybe(img,y,x-1,inf) << 3) | maybe(img,y+1,x-1,inf)
+        return algo[ind]
 
-let img = {}
-for y in range(height):
-    for x in range(width):
-        if rest[y][x] == '#':
-            img[(y,x)] = 1
+    let img = {}
+    for y in range(height):
+        for x in range(width):
+            if rest[y][x] == '#':
+                img[(y,x)] = 1
 
-let inf = 0
-for i in range(50):
-    let next = {}
+    let inf = 0
+    let flip = (1,0)
+    for i in range(50):
+        let next = {}
 
-    let mi_y = min(y for y,x in img.keys()) - 1
-    let ma_y = max(y for y,x in img.keys()) + 2
-    let mi_x = min(x for y,x in img.keys()) - 1
-    let ma_x = max(x for y,x in img.keys()) + 2
+        let mi_y = min(y for y,x in img) - 1
+        let ma_y = max(y for y,x in img) + 2
+        let mi_x = min(x for y,x in img) - 1
+        let ma_x = max(x for y,x in img) + 2
 
-    for y in range(mi_y,ma_y):
-        for x in range(mi_x,ma_x):
-            let res = pt_to_manip(img,y,x,inf)
-            if res == inf:
-                next[(y,x)] = res
+        for y in range(mi_y,ma_y):
+            for x in range(mi_x,ma_x):
+                if pt_to_manip(img,y,x,inf) == inf:
+                    next[(y,x)] = inf
 
-    inf = 1 if inf == 0 else 0
+        inf = flip[inf]
 
-    for _y in range(mi_y-1, ma_y+1):
-        for _x in range(mi_x-1, ma_x+1):
-            print(' #'[next.get((_y,_x),inf)],end='')
-        print()
+        #for _y in range(mi_y-1, ma_y+1):
+        #    for _x in range(mi_x-1, ma_x+1):
+        #        print(' #'[next.get((_y,_x),inf)],end='')
+        #    print()
 
-    print(i+1,len(next),'unlit' if inf == 1 else 'lit')
-    img = next
+        img = next
+    print(len(img),'unlit' if inf == 1 else 'lit')
 
-
+    os.exit(0)

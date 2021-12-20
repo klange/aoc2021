@@ -11,22 +11,17 @@ with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].repl
 
 let lines = [line.strip() for line in data]
 
-let algo = lines[0].replace('#','1').replace('.','0')
+let algo = [1 if x == '#' else 0 for x in lines[0]]
 let rest = lines[2:]
 
 let height = len(rest)
 let width = len(rest[0])
 
 def maybe(img,y,x,inf):
-    let out = ''
-    out += img.get((y,x),inf)
-    out += img.get((y,x+1),inf)
-    out += img.get((y,x+2),inf)
-    return out
+    return (img.get((y,x),inf) << 2) | (img.get((y,x+1),inf) << 1) | (img.get((y,x+2),inf))
 
 def pt_to_nums(img,y,x,inf):
-    let s = maybe(img,y-1,x-1,inf) + maybe(img,y,x-1,inf) + maybe(img,y+1,x-1,inf)
-    return int('0b' + s)
+    return (maybe(img,y-1,x-1,inf) << 6) | (maybe(img,y,x-1,inf) << 3) | maybe(img,y+1,x-1,inf)
 
 def pt_to_manip(img,y,x,inf):
     let ind = pt_to_nums(img,y,x,inf)
@@ -36,14 +31,9 @@ let img = {}
 for y in range(height):
     for x in range(width):
         if rest[y][x] == '#':
-            img[(y,x)] = '1'
+            img[(y,x)] = 1
 
-let cells = {
-    '0': ' ',
-    '1': '#'
-}
-
-let inf = '0'
+let inf = 0
 for i in range(50):
     let next = {}
 
@@ -58,14 +48,14 @@ for i in range(50):
             if res == inf:
                 next[(y,x)] = res
 
-    inf = '1' if inf == '0' else '0'
+    inf = 1 if inf == 0 else 0
 
     for _y in range(mi_y-1, ma_y+1):
         for _x in range(mi_x-1, ma_x+1):
-            print(cells[next.get((_y,_x),inf)],end='')
+            print(' #'[next.get((_y,_x),inf)],end='')
         print()
 
-    print(i+1,len(next),'unlit' if inf == '1' else 'lit')
+    print(i+1,len(next),'unlit' if inf == 1 else 'lit')
     img = next
 
 

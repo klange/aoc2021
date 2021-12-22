@@ -1,0 +1,65 @@
+#!/usr/bin/env kuroko
+'''
+Day 22
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let lines = [line.strip() for line in data]
+
+let operations = []
+for line in lines:
+    let instr, coords = line.split(' ')
+    let x,y,z = (tuple(int(f) for f in _.split('=')[1].split('..')) for _ in coords.split(','))
+
+    operations.append((instr,x,y,z))
+
+def on_or_off(ops,z):
+    let state = False
+    for op,_x,_y,_z in ops:
+        if (z >= _z[0] and z <= _z[1]):
+            state = (op == 'on')
+    return state
+
+let total = 0.0
+let regions = 0
+
+def find_breaks(ops, axis):
+    let breaks = set()
+    for op in ops:
+        breaks.add(op[axis][0])
+        breaks.add(op[axis][1]+1)
+    return sorted(breaks)
+
+def filter_ops(ops, axis, value):
+    return tuple(op for op in ops if value >= op[axis][0] and value <= op[axis][1])
+
+let sorted_x_breaks = find_breaks(operations, 1)
+
+for x = 0; x < len(sorted_x_breaks) - 1; x++:
+    let _x = sorted_x_breaks[x]
+    let width = float(sorted_x_breaks[x+1] - sorted_x_breaks[x])
+    let x_ops = filter_ops(operations, 1, _x)
+    let sorted_y_breaks = find_breaks(x_ops, 2)
+
+    for y = 0; y < len(sorted_y_breaks) - 1; y++:
+        let _y = sorted_y_breaks[y]
+        let height = float(sorted_y_breaks[y+1] - sorted_y_breaks[y])
+        let area = width * height
+        let y_ops = filter_ops(x_ops, 2, _y)
+        let sorted_z_breaks = find_breaks(y_ops, 3)
+
+        for z = 0; z < len(sorted_z_breaks) - 1; z++:
+            let _z = sorted_z_breaks[z]
+            let depth = float(sorted_z_breaks[z+1] - sorted_z_breaks[z])
+            let volume = area * depth
+            if on_or_off(y_ops, _z):
+                total += volume
+            regions++
+
+print(total)
+print(regions)

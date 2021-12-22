@@ -1,0 +1,76 @@
+'''
+def make_die():
+    let counter = 1
+    def roll_die():
+        let out = counter
+        counter++
+        if counter == 101:
+            counter = 1
+        return out
+    return roll_die
+
+def do_it():
+    let players = [5,10]
+    let scores = [0,0]
+    let die = make_die()
+    let rolls = 0
+
+    while True:
+        for i in range(2):
+            let current = players[i]
+            let next = (current - 1 + die() + die() + die()) % 10 + 1
+            rolls += 3
+            scores[i] += next
+            players[i] = next
+            print('player',i+1,scores[i],scores[1-i],scores[1-i]*rolls)
+            if scores[i] >= 1000:
+                return
+
+do_it()
+'''
+
+def space(current,a,b,c):
+    return (current - 1 + a + b + c) % 10 + 1
+
+let two_memo = {}
+let one_memo = {}
+let do_round
+
+def do_round_two(players,scores):
+    if (players,scores) in two_memo:
+        return two_memo[(players,scores)]
+    let wins_1 = 0.0
+    let wins_2 = 0.0
+    for a in range(1,4):
+        for b in range(1,4):
+            for c in range(1,4):
+                let s = space(players[1],a,b,c)
+                if scores[1] + s >= 21:
+                    wins_2 += 1
+                else:
+                    let x,y = do_round((players[0],s), (scores[0],scores[1]+s))
+                    wins_1 += x
+                    wins_2 += y
+    two_memo[(players,scores)] = (wins_1, wins_2)
+    return wins_1, wins_2
+
+def _do_round(players,scores):
+    if (players,scores) in one_memo:
+        return one_memo[(players,scores)]
+    let wins_1 = 0.0
+    let wins_2 = 0.0
+    for a in range(1,4):
+        for b in range(1,4):
+            for c in range(1,4):
+                let s = space(players[0],a,b,c)
+                if scores[0] + s >= 21:
+                    wins_1 += 1
+                else:
+                    let x,y = do_round_two((s,players[1]),(scores[0]+s,scores[1]))
+                    wins_1 += x
+                    wins_2 += y
+    one_memo[(players,scores)] = (wins_1, wins_2)
+    return wins_1, wins_2
+
+do_round = _do_round
+print(max(do_round((5,10),(0,0))))

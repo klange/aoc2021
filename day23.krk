@@ -1,0 +1,146 @@
+#!/usr/bin/env kuroko
+'''
+Day 23
+'''
+
+let costs = {
+    'A': 1,
+    'B': 10,
+    'C': 100,
+    'D': 1000
+}
+
+let homes = {
+    'A': 2,
+    'B': 4,
+    'C': 6,
+    'D': 8
+}
+
+
+class Pod:
+    def __init__(self,x,y,ch):
+        self.x = x
+        self.y = y
+        self.ch = ch
+        self.home = homes[ch]
+
+    def move_to(self,world,dx,dy):
+        if dy > 0 and self.y != 0: return False
+        if dy == 0 and self.y == 0: return False
+        if self.y == 2 and world[1][self.x] != 'x':
+            return False
+        if dy == 0 and world[dy][dx] != '.':
+            return False
+        if dx < self.x:
+            for i in range(dx,self.x):
+                if world[0][i] != '.' and world[0][i] != 'x':
+                    return False
+        if dx > self.x:
+            for i in range(self.x+1,dx+1):
+                if world[0][i] != '.' and world[0][i] != 'x':
+                    return False
+        world[self.y][self.x] = ('x' if self.y > 0 else '.')
+        self.y = dy
+        self.x = dx
+        world[self.y][self.x] = self.ch
+        return True
+
+    def try_for_home(self,world):
+        if self.y == 0 and world[2][self.home] == 'x':
+            return self.move_to(world,self.home,2)
+        if self.y == 0 and world[2][self.home] == self.ch and world[1][self.home] == 'x':
+            return self.move_to(world,self.home,1)
+        return False
+
+    @staticmethod
+    def copy(other):
+        return Pod(other.x,other.y,other.ch)
+
+
+def calculateCost(moves,pods):
+    def initialSpot(n):
+        if n < 4: return n * 2 + 2
+        return (n - 4) * 2 + 2
+    def calc(n,d):
+        let init_x = initialSpot(n)
+        let init_y = 1 if n < 4 else 2
+        return (abs(init_x - d) + init_y + abs(pods[n].x - d) + pods[n].y) * costs[pods[n].ch]
+    return sum(calc(n,d) for n,d in moves)
+
+let try_pods
+
+let currentWinner = False
+def simulate(moved, moves, world, pods, next, currentScore):
+    let mover, dest = next
+
+    # Create a fresh state to simulate here
+    let nworld = [[x for x in y] for y in world]
+    let npods = [Pod.copy(pod) for pod in pods]
+
+    # Can we make this move?
+    if not npods[mover].move_to(nworld, dest, 0):
+        return False
+
+    let scoreCost = calculateCost([next],npods)
+    if currentWinner is not False and currentScore + scoreCost >= currentWinner:
+        return False
+
+    # Move all the things that can go home this turn.
+    let _moved = True
+    while _moved:
+        _moved = False
+        for p in npods:
+            if p.try_for_home(nworld):
+                _moved = True
+
+    # Is everything home already?
+    if all((pod.x == pod.home and pod.y > 0) for pod in npods):
+        let res = calculateCost(moves,npods)
+        #print('\n'.join(''.join(x) for x in nworld))
+        #print(moves,res)
+        return res
+
+    currentScore += scoreCost
+
+    # Otherwise, we need to simulate another move
+    return try_pods([x for x in [0,1,2,3,4,5,6,7] if x not in moved], npods, nworld, moved, moves, currentScore)
+
+import gc
+def _try_pods(movers,pods,world,moved=set(),moves=[],currentScore=0):
+    let myWinner = False
+    for mover in movers:
+        moved.add(mover)
+        for move in [0,1,3,5,7,9,10]:
+            moves.append((mover,move))
+            let maybe = simulate(moved,moves,world,pods,(mover,move),currentScore)
+            if maybe is not False:
+                if myWinner is False or maybe < myWinner:
+                    myWinner = maybe
+            moves.pop()
+        moved.remove(mover)
+        if myWinner is not False and (currentWinner is False or myWinner < currentWinner):
+            currentWinner = myWinner
+        if len(moved) == 2:
+            print(currentWinner,moves)
+            gc.collect()
+    return myWinner
+try_pods = _try_pods
+
+def try_one():
+    let world = [
+        list('..x.x.x.x..'),
+        list('##D#A#A#D##'),
+        list('##C#C#B#B##'),
+    ]
+
+    let pods = []
+    for y in range(len(world)):
+        for x in range(len(world[y])):
+            if world[y][x] not in '.x#':
+                pods.append(Pod(x,y,world[y][x]))
+
+    print(try_pods([0,1,2,3],pods,world))
+
+
+try_one()

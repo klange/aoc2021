@@ -1,0 +1,106 @@
+#!/usr/bin/env kuroko
+'''
+Day 24
+'''
+import fileio
+import kuroko
+
+let data
+with fileio.open(kuroko.argv[1] if len(kuroko.argv) > 1 else kuroko.argv[0].replace('.krk','.txt'),'r') as f:
+    data = f.readlines()
+
+let lines = [line.strip() for line in data]
+
+if False:
+    def operand(vars,thing):
+        if thing in vars:
+            return vars[thing]
+        return int(thing)
+
+    let opcodes = {
+        'add': lambda vars,vals: (vars[vals[1]] = vars[vals[1]] + operand(vars,vals[2])),
+        'mul': lambda vars,vals: (vars[vals[1]] = vars[vals[1]] * operand(vars,vals[2])),
+        'div': lambda vars,vals: (vars[vals[1]] = vars[vals[1]] // operand(vars,vals[2])),
+        'mod': lambda vars,vals: (vars[vals[1]] = vars[vals[1]] % operand(vars,vals[2])),
+        'eql': lambda vars,vals: (vars[vals[1]] = int(vars[vals[1]] == operand(vars,vals[2]))),
+        'inp': None
+    }
+
+    let instr = []
+    for line in lines:
+        let vals = line.split(' ')
+        let opcode = opcodes[vals[0]]
+        instr.append((opcode,vals))
+
+    import gc
+    let memo = {}
+    let digits = [9,8,7,6,5,4,3,2,1]
+    def run_one(w,z,ip):
+        let vars = {'w':w,'z':z,'x':0,'y':0}
+        while ip < len(lines):
+            let opcode, vals = instr[ip]
+
+            if opcode is None:
+                for i in digits:
+                    if ip < 53:
+                        print(' ' * (ip // 15), i)
+                        gc.collect()
+
+                    let nstate = (i,vars['z'],ip+1)
+                    if nstate in memo:
+                        return memo[nstate]
+
+                    let sol = run_one(i,vars['z'],ip+1)
+                    memo[nstate] = sol
+                    if sol is not None:
+                        return str(i) + sol
+                return None
+            else:
+                opcode(vars,vals)
+                ip++
+        if vars['z'] == 0:
+            return ''
+        return None
+
+    print(run_one(0,0,0))
+
+else:
+    let direction = 'up'
+    print("#include <stdio.h>")
+    for direction in ['down','up']:
+        print(f"static int do_{direction}(void) " + "{")
+        let ind = 0
+        if direction == 'down':
+            for f in range(14):
+                print('\t' * f + f'\tfor (int i{f} = 9; i{f} > 0; i{f}--)')
+        else:
+            for f in range(14):
+                print('\t' * f + f'\tfor (int i{f} = 1; i{f} <= 9; i{f}++)')
+
+        print('\t' * 14 + '{')
+        print('\n'.join('\t' * 15 + f'int {v} = 0;' for v in 'wxyz'))
+
+        for line in lines:
+            let vals = line.split(' ')
+            let opcode = vals[0]
+            print('\t' * 15,end='')
+            if opcode == 'inp':
+                print(vals[1],'= i'+str(ind)+';')
+                ind++
+            elif opcode == 'add':
+                print(vals[1],'+=',vals[2],';')
+            elif opcode == 'mul':
+                print(vals[1],'*=',vals[2],';')
+            elif opcode == 'div':
+                print(vals[1],'/=',vals[2],';')
+            elif opcode == 'mod':
+                print(vals[1],'%=',vals[2],';')
+            elif opcode == 'eql':
+                print(vals[1],'= (int)(',vals[1],'==',vals[2],');')
+
+        print('\t' * 15 + 'if (z == 0) { printf("' + '%d' * 14 + '\\n",' + ','.join(f'i{n}' for n in range(14)) + '); return 0; }')
+        print('\t' * 14 + '}')
+        print("\treturn 1;")
+        print("}")
+    print("int main() { do_down(); do_up(); return 0; }")
+

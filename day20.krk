@@ -7,7 +7,7 @@ import kuroko
 import gc
 import os
 
-gc.pause()
+#gc.pause()
 
 if True:
     let data
@@ -15,9 +15,11 @@ if True:
         data = f.readlines()
 
     let lines = [line.strip() for line in data]
+    data = None
 
     let algo = [1 if x == '#' else 0 for x in lines[0]]
     let rest = lines[2:]
+    lines = None
 
     let height = len(rest)
     let width = len(rest[0])
@@ -34,6 +36,7 @@ if True:
         for x in range(width):
             if rest[y][x] == '#':
                 img[(y,x)] = 1
+    rest = None
 
     let inf = 0
     let flip = (1,0)

@@ -70,6 +70,7 @@ def calculateCost(moves,pods):
 
 let try_pods
 
+let nums = [0,1,2,3,4,5,6,7]
 let currentWinner = False
 def simulate(moved, moves, world, pods, next, currentScore):
     let mover, dest = next
@@ -104,7 +105,7 @@ def simulate(moved, moves, world, pods, next, currentScore):
     currentScore += scoreCost
 
     # Otherwise, we need to simulate another move
-    return try_pods([x for x in [0,1,2,3,4,5,6,7] if x not in moved], npods, nworld, moved, moves, currentScore)
+    return try_pods([x for x in nums if x not in moved], npods, nworld, moved, moves, currentScore)
 
 import gc
 def _try_pods(movers,pods,world,moved=set(),moves=[],currentScore=0):
@@ -123,7 +124,7 @@ def _try_pods(movers,pods,world,moved=set(),moves=[],currentScore=0):
             currentWinner = myWinner
         if len(moved) == 2:
             print(currentWinner,moves)
-            gc.collect()
+            #gc.collect()
     return myWinner
 try_pods = _try_pods
 

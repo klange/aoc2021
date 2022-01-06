@@ -82,8 +82,8 @@ def runpart(scale):
     let path = A_Star((0,0),target,h)
     print(path - nodes[0][0])
 
-# runpart(1)
-# runpart(5)
+#runpart(1)
+runpart(5)
 
 def runpart2(scale):
     let _height = len(lines)
@@ -127,4 +127,4 @@ def runpart2(scale):
     print(score[height-1][width-1])
     print(generations,"generations total")
 
-runpart2(5)
+#runpart2(5)
